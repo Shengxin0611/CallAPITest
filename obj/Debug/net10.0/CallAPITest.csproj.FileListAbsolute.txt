@@ -95,3 +95,4 @@ d:\Codes\DotNetCore\CallAPITest\obj\Debug\net10.0\refint\CallAPITest.dll
 d:\Codes\DotNetCore\CallAPITest\obj\Debug\net10.0\CallAPITest.pdb
 d:\Codes\DotNetCore\CallAPITest\obj\Debug\net10.0\CallAPITest.genruntimeconfig.cache
 d:\Codes\DotNetCore\CallAPITest\obj\Debug\net10.0\ref\CallAPITest.dll
+d:\Codes\DotNetCore\CallAPITest\obj\Debug\net10.0\CallAPITest.sourcelink.json

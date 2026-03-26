@@ -2,6 +2,8 @@ namespace CallAPITest.Models;
 
 public class WeatherForecastModel
 {
+    public string? Id { get; set; }
+
     public DateTime Date { get; set; }
 
     public int TemperatureC { get; set; }

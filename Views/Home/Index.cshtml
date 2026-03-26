@@ -2,11 +2,85 @@
     ViewData["Title"] = "Home Page";
 }
 
+@section Scripts {
+<script>
+    document.addEventListener('click', async function (e) {
+        const target = e.target;
+        const row = target.closest('tr');
+        if (!row) return;
+
+        // 取得 ID
+        const id = row.getAttribute('data-id');
+
+        // 點擊「修改」或「新增」：切換到編輯模式
+        if (target.classList.contains('add-btn') || target.classList.contains('edit-btn')) {
+            toggleMode(row, true);
+        }
+
+        // 點擊「取消」：切換回顯示模式
+        if (target.classList.contains('cancel-btn')) {
+            toggleMode(row, false);
+        }
+
+        // 點擊「儲存」
+        if (target.classList.contains('save-btn')) {
+            const data = {
+                Id: id,
+                Date: row.querySelector('[name="Date"]').value,
+                TemperatureC: row.querySelector('[name="TemperatureC"]').value,
+                TemperatureF: row.querySelector('[name="TemperatureF"]').value,
+                Summary: row.querySelector('[name="Summary"]').value
+            };
+            const url = !id ? '/Home/Create' : '/Home/Update';
+            await sendRequest(url, data);
+        }
+
+        // 點擊「刪除」
+        if (target.classList.contains('delete-btn')) {
+            if (confirm('確定要刪除此資料嗎？')) {
+                const data = {
+                    Id: id
+                };
+
+                await sendRequest('/Home/Delete', data);
+            }
+        }
+    });
+
+    //切換模式
+    function toggleMode(row, isEdit) {
+        row.querySelectorAll('.view-mode').forEach(el => el.classList.toggle('d-none', isEdit));
+        row.querySelectorAll('.edit-mode').forEach(el => el.classList.toggle('d-none', !isEdit));
+    }
+
+    async function sendRequest(url, data) {
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                const errorText = await response.text();
+                alert('操作失敗: ' + errorText);
+            }
+        } catch (err) {
+            console.error('Error:', err);
+            alert('連線發生錯誤');
+        }
+    }
+</script>
+}
+
 <h2>WeatherForecast</h2>
 
 <table class="table">
     <thead>
         <tr>
+            <th></th>
             <th>Date</th>
             <th>TemperatureC</th>
             <th>TemperatureF</th>
@@ -16,12 +90,62 @@
     <tbody>
         @foreach (var item in Model)
         {
-            <tr>
-                <td>@item.Date.ToString("yyyy/MM/dd")</td>
-                <td>@item.TemperatureC</td>
-                <td>@item.TemperatureF</td>
-                <td>@item.Summary</td>
+            <tr data-id="@item.Id">
+                <td>
+                    <!-- 預設顯示的按鈕 -->
+                    <div class="view-mode">
+                        <button class="btn btn-sm btn-primary edit-btn">修改</button>
+                        <button class="btn btn-sm btn-danger delete-btn">刪除</button>
+                    </div>
+                    <!-- 編輯狀態下的按鈕 -->
+                    <div class="edit-mode d-none">
+                        <button class="btn btn-sm btn-success save-btn">儲存</button>
+                        <button class="btn btn-sm btn-secondary cancel-btn">取消</button>
+                    </div>
+                </td>
+                <td>
+                    <span class="view-mode">@item.Date.ToString("yyyy/MM/dd")</span>
+                    <input type="date" class="form-control edit-mode d-none" name="Date" value="@item.Date.ToString("yyyy-MM-dd")" />
+                </td>
+                <td>
+                    <span class="view-mode">@item.TemperatureC</span>
+                    <input type="number" class="form-control edit-mode d-none" name="TemperatureC" value="@item.TemperatureC" />
+                </td>
+                <td>
+                    <span class="view-mode">@item.TemperatureF</span>
+                    <input type="number" class="form-control edit-mode d-none" name="TemperatureF" value="@item.TemperatureF" />
+                </td>
+                <td>
+                    <span class="view-mode">@item.Summary</span>
+                    <input type="text" class="form-control edit-mode d-none" name="Summary" value="@item.Summary" />
+                </td>
             </tr>
         }
+
+        <tr>
+                <td>
+                    <!-- 預設顯示的按鈕 -->
+                    <div class="view-mode">
+                        <button class="btn btn-sm btn-success add-btn">新增</button>
+                    </div>
+                    <!-- 編輯狀態下的按鈕 -->
+                    <div class="edit-mode d-none">
+                        <button class="btn btn-sm btn-success save-btn">儲存</button>
+                        <button class="btn btn-sm btn-secondary cancel-btn">取消</button>
+                    </div>
+                </td>
+                <td>
+                    <input type="date" class="form-control edit-mode d-none" name="Date" />
+                </td>
+                <td>
+                    <input type="number" class="form-control edit-mode d-none" name="TemperatureC" />
+                </td>
+                <td>
+                    <input type="number" class="form-control edit-mode d-none" name="TemperatureF" />
+                </td>
+                <td>
+                    <input type="text" class="form-control edit-mode d-none" name="Summary" />
+                </td>
+            </tr>
     </tbody>
 </table>

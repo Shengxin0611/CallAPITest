@@ -1,10 +1,15 @@
 using CallAPITest.Services;
 
 var builder = WebApplication.CreateBuilder(args);
+var weatherApiBaseUrl = builder.Configuration.GetValue<string>("ApiSettings:WeatherApiBaseUrl");
 
 // Add services to the container.
 builder.Services.AddHttpClient();
 builder.Services.AddHttpClient<IWeatherForecastService, WeatherForecastService>();
+builder.Services.AddHttpClient<IWeatherForecastService, WeatherForecastService>(client =>
+{
+    client.BaseAddress = new Uri(weatherApiBaseUrl ?? throw new InvalidOperationException("API Base URL is missing."));
+});
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();

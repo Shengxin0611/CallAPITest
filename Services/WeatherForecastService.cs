@@ -1,26 +1,55 @@
-using System.Text.Json;
 using CallAPITest.Models;
+using System.Text.Json;
 
 namespace CallAPITest.Services;
 
-// 定義介面（好處是未來方便抽換或測試）
 public interface IWeatherForecastService
 {
-    Task<List<WeatherForecastModel>> GeteatherForecastAsync();
+    Task<List<WeatherForecastModel>> GetWeatherForecastAsync();
+
+    Task<bool> CreateWeatherAsync(WeatherForecastModel data);
+
+    Task<bool> UpdateWeatherAsync(WeatherForecastModel data);
+
+    Task<bool> DeleteWeatherAsync(string id);
 }
 
 public class WeatherForecastService(HttpClient httpClient) : IWeatherForecastService
 {
     private readonly HttpClient _httpClient = httpClient;
 
-    public async Task<List<WeatherForecastModel>> GeteatherForecastAsync()
-    {
-        var response = await _httpClient.GetAsync("https://localhost:5001/weatherforecast");
-        response.EnsureSuccessStatusCode();
+    private static readonly JsonSerializerOptions options = new() 
+    { 
+        PropertyNameCaseInsensitive = true 
+    };
 
-        var content = await response.Content.ReadAsStringAsync();
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        
-        return JsonSerializer.Deserialize<List<WeatherForecastModel>>(content, options) ?? new List<WeatherForecastModel>();
+    public async Task<List<WeatherForecastModel>> GetWeatherForecastAsync()
+    {        
+        var response = await _httpClient.GetAsync("");
+        response.EnsureSuccessStatusCode();       
+        var result = await response.Content.ReadAsStringAsync();        
+        return JsonSerializer.Deserialize<List<WeatherForecastModel>>(result, options) ?? [];
+    }
+    
+    public async Task<bool> CreateWeatherAsync(WeatherForecastModel data)
+    {
+        var jsonContent = JsonSerializer.Serialize(data, options);
+        var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+        var response = await _httpClient.PostAsync("", content);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> UpdateWeatherAsync(WeatherForecastModel data)
+    {
+        var jsonContent = JsonSerializer.Serialize(data, options);
+        var content = new StringContent(jsonContent, System.Text.Encoding.UTF8, "application/json");
+        var response = await _httpClient.PutAsync("", content);
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task<bool> DeleteWeatherAsync(string id)
+    {
+        var response = await _httpClient.DeleteAsync($"{_httpClient.BaseAddress}/{id}");
+        return response.IsSuccessStatusCode;
     }
 }
